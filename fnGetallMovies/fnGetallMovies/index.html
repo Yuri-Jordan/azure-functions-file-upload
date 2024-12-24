@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Filmes</title>
+    <style>
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px;
+            width: 200px;
+            text-align: center;
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+        .card-title {
+            font-size: 1.2em;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="movies-container"></div>
+
+    <script>
+        async function fetchMovies() {
+            try {
+                const response1 = await fetch('http://localhost:7086/api/all');
+                const movies1 = await response1.json();
+                const response2 = await fetch('http://localhost:7086/api/all');
+                const movies2 = await response2.json();
+
+                const allMovies = [...movies1, ...movies2];
+                displayMovies(allMovies);
+            } catch (error) {
+                console.error('Erro ao buscar filmes:', error);
+            }
+        }
+
+        function displayMovies(movies) {
+            const container = document.getElementById('movies-container');
+            container.innerHTML = '';
+
+            movies.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const title = document.createElement('div');
+                title.className = 'card-title';
+                title.textContent = movie.title;
+
+                const thumb = document.createElement('img');
+                thumb.src = movie.thumb;
+                thumb.alt = movie.title;
+                thumb.onclick = () => downloadAndPlayVideo(movie.videoUrl);
+
+                card.appendChild(title);
+                card.appendChild(thumb);
+                container.appendChild(card);
+            });
+        }
+
+        async function downloadAndPlayVideo(videoUrl) {
+            try {
+                const response = await fetch(videoUrl);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const video = document.createElement('video');
+                video.src = url;
+                video.controls = true;
+                video.autoplay = true;
+                document.body.appendChild(video);
+            } catch (error) {
+                console.error('Erro ao baixar e reproduzir o vídeo:', error);
+            }
+        }
+
+        fetchMovies();
+    </script>
+</body>
+</html>
